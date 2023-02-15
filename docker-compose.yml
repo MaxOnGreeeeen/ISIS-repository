@@ -1,0 +1,40 @@
+version: "3.4"
+
+networks:
+  dev:
+    driver: bridge
+
+services:
+  demo-app:
+    image: docker.io/library/webapp
+    depends_on:
+      - "app_db"
+    container_name: webapp-services
+    ports:
+      - "8088:80"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment: 
+      - ConnectionStrings__DefaultConnection=User ID=${DB_USER};Password=${DB_PASSWORD};Server=app_db;Port=${DB_PORT};Database=${DB_NAME};IntegratedSecurity=true;Pooling=true
+      - ASPNETCORE_URLS=http://+:80
+    networks:
+      - dev
+
+  app_db:
+    image: postgres:15
+    container_name: app-db-service
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - "5433:5432"
+    restart: always
+    volumes:
+      - app_data:/var/lib/postgresql/data
+    networks:
+      - dev
+
+volumes:
+  app_data:
