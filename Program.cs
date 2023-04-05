@@ -5,10 +5,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
 
-
-
 // Add services to the container.
-var connection = builder.Configuration.GetConnectionString("DefaultConnection");
+var connection = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
 
 builder.Services.AddDbContext<ApiDbContext>(options => options.UseNpgsql(connection));
 builder.Services.AddControllers();
