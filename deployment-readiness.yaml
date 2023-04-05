@@ -1,3 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notes-app-api
+  labels:
+    app: notes-app-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: notes-app-api
+  template:
+    metadata:
+      labels:
+        app: notes-app-api
+    spec:
+      containers:
+      - name: notes-app-api
+        image: maxongreen/isis6lab:latest
+        ports:
+          - containerPort: 80
+        envFrom: 
+          - configMapRef:                
+              name: notes-app-api-config
+        readinessProbe:
+          httpGet:
+            path: /notes
+            port: 80
+          failureThreshold: 3
+          successThreshold: 1
+          initialDelaySeconds: 30
+          periodSeconds: 5
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 200m
+            memory: 200Mi
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: notes-app-api-service
+  labels:
+    app: notes-app-api-service
+spec:
+ type: LoadBalancer
+ ports:
+  - port: 8088
+    targetPort: 80
+ selector:
+   app: notes-app-api
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: notes-app-api-ingress
+  labels:
+    app: notes-app-api-ingress
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: notes-app-api-service
+            port:
+              number: 8088
+
+---
+
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -61,13 +139,9 @@ spec:
           limits:
             cpu: 200m
             memory: 200Mi
-        env:
-          - name: POSTGRES_USER
-            value: postgres
-          - name: POSTGRES_PASSWORD
-            value: postgres
-          - name: POSTGRES_DB
-            value: SampleNotesDb
+        envFrom:
+          - configMapRef:
+              name: notes-app-config
         volumeMounts:
           - mountPath: "/var/lib/postgresql/data"
             name: notes-app-postgres-pv-storage
@@ -79,7 +153,7 @@ kind: Service
 metadata:
   name: notes-app-postgres-service
 spec:
- type: ClusterIP
+ type: NodePort
  ports:
   - name: "notes-app-postgres"
     port: 5432
