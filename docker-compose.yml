@@ -18,6 +18,7 @@ services:
     environment: 
       - ConnectionStrings__DefaultConnection=User ID=${DB_USER};Password=${DB_PASSWORD};Server=app_db;Port=${DB_PORT};Database=${DB_NAME};IntegratedSecurity=true;Pooling=true
       - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_ENVIRONMENT=Development 
     networks:
       - dev
 

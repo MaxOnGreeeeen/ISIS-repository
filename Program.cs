@@ -5,6 +5,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
 
+
+
 // Add services to the container.
 var connection = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -15,6 +17,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApiDbContext>();
+    db.Database.Migrate();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -9,6 +9,8 @@ namespace NotesWebApp.Controllers;
 [Route("[controller]")]
 public class NotesController : ControllerBase
 {
+    private static Random random = new Random();
+
     private readonly ILogger<NotesController> _logger;
 
     private readonly ApiDbContext _context;
@@ -19,16 +21,16 @@ public class NotesController : ControllerBase
         _context = context;
     }
 
-    [HttpGet(Name = "GetAllNotes")]
+    [HttpGet(Name = "GetAllNotes")]     
     public async Task<IActionResult> GetAll()
     {
-        var mockNote = new Note()
-        {
-            Title = "title",
-            Description = "description"
-        };
-         _context.Add(mockNote);
         await _context.SaveChangesAsync();
+
+        var randomGeneratedValue = random.Next(0, 2);
+
+        if (randomGeneratedValue == 0){
+            return BadRequest();
+        }
 
         var allNotes = await _context.Notes.ToListAsync();
 
